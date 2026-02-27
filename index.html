@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -16,8 +17,8 @@ body{
  color:white;
  font-family:Arial;
  padding:20px;
+ margin: 0;
 }
-/* Se agregó "textarea" y box-sizing para evitar que se salga de los márgenes */
 input, select, button, textarea{
  width:100%;
  margin:6px 0;
@@ -26,15 +27,12 @@ input, select, button, textarea{
  border:none;
  box-sizing: border-box; 
 }
-/* Estilos específicos para las notas */
-textarea {
- font-family: Arial;
- resize: vertical; /* Permite al usuario hacer el cuadro más grande hacia abajo */
-}
+textarea { resize: vertical; font-family: Arial; }
 button{
  background:#2563eb;
  color:white;
  font-weight:bold;
+ cursor: pointer;
 }
 .card{
  background:#27272a;
@@ -42,6 +40,30 @@ button{
  border-radius:12px;
  margin-top:15px;
 }
+/* Estilos para los botones tipo Pestaña */
+.tabs {
+ display: flex;
+ gap: 10px;
+ margin-top: 10px;
+}
+.tab-btn {
+ background: #3f3f46;
+ color: #a1a1aa;
+}
+.tab-btn.active {
+ background: #2563eb;
+ color: white;
+}
+/* Estilo para las tarjetas del historial */
+.history-item {
+ background: #3f3f46;
+ padding: 12px;
+ border-radius: 8px;
+ margin-bottom: 10px;
+ font-size: 14px;
+}
+.history-date { color: #a1a1aa; font-size: 12px; margin-bottom: 5px; }
+.history-title { font-size: 16px; font-weight: bold; color: #60a5fa; }
 </style>
 </head>
 
@@ -49,31 +71,62 @@ button{
 
 <h2>IHC Smart Maintenance</h2>
 
-<div class="card">
-<h3>Add Machine</h3>
+<div class="tabs">
+  <button id="btnAdd" class="tab-btn active" onclick="switchTab('add')">Add Machine</button>
+  <button id="btnHistory" class="tab-btn" onclick="switchTab('history')">History</button>
+</div>
 
-<input id="name" placeholder="Machine Name">
+<div id="viewAdd" class="card">
+  <h3>New Record</h3>
 
-<select id="type">
-<option>Lathe</option>
-<option>Mill</option>
-<option>Press Brake</option>
-<option>Laser Machine</option>
-</select>
+  <input id="name" placeholder="Machine Name">
 
-<input id="brand" placeholder="Brand">
-<input id="model" placeholder="Model">
-<input id="year" placeholder="Year">
-<input id="hours" placeholder="Spindle Hours">
+  <select id="type">
+    <option>Lathe</option>
+    <option>Mill</option>
+    <option>Press Brake</option>
+    <option>Laser Machine</option>
+  </select>
 
-<textarea id="notes" placeholder="Notes / Observaciones" rows="3"></textarea>
+  <input id="brand" placeholder="Brand">
+  <input id="model" placeholder="Model">
+  <input id="year" placeholder="Year">
+  <input id="hours" placeholder="Spindle Hours">
+  
+  <textarea id="notes" placeholder="Notes / Observaciones" rows="3"></textarea>
 
-<button onclick="saveMachine()">Save Machine</button>
+  <button onclick="saveMachine()">Save Machine</button>
+</div>
+
+<div id="viewHistory" class="card" style="display: none;">
+  <h3>Maintenance History</h3>
+  <button onclick="loadHistory()" style="background: #10b981; margin-bottom: 15px;">Refresh History</button>
+  <div id="historyList">
+    <p style="color: #a1a1aa; text-align: center;">Presiona Refresh para cargar...</p>
+  </div>
 </div>
 
 <script>
-async function saveMachine(){
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzz2E61mwqDyIUhxdp3-WFkD6XUFQg55GOt3Lc3vvKgjiB4fg_ZTqTSj6-RR-FEbDgE/exec"; // <-- PEGA TU URL AQUÍ (SOLO UNA VEZ ES NECESARIO AHORA)
 
+// Función para cambiar de pestañas
+function switchTab(tab) {
+  if(tab === 'add') {
+    document.getElementById("viewAdd").style.display = "block";
+    document.getElementById("viewHistory").style.display = "none";
+    document.getElementById("btnAdd").classList.add("active");
+    document.getElementById("btnHistory").classList.remove("active");
+  } else {
+    document.getElementById("viewAdd").style.display = "none";
+    document.getElementById("viewHistory").style.display = "block";
+    document.getElementById("btnAdd").classList.remove("active");
+    document.getElementById("btnHistory").classList.add("active");
+    loadHistory(); // Carga los datos automáticamente al abrir la pestaña
+  }
+}
+
+// Función para guardar (POST)
+async function saveMachine(){
  const machine={
   name:document.getElementById("name").value,
   type:document.getElementById("type").value,
@@ -81,22 +134,66 @@ async function saveMachine(){
   model:document.getElementById("model").value,
   year:document.getElementById("year").value,
   hours:document.getElementById("hours").value,
-  notes:document.getElementById("notes").value // NUEVO: Captura el valor de las notas
+  notes:document.getElementById("notes").value
  };
 
- // Recuerda poner tu URL de Google Apps Script aquí
- await fetch("https://script.google.com/macros/s/AKfycbynXOoAeg7k0JxPwj46z7-vn195__3OF8oSOM9P6gAWsxWHeODinut6jyCvv6ZQkCKD/exec",{
+ document.querySelector("#viewAdd button").innerText = "Saving...";
+
+ await fetch(SCRIPT_URL,{
    method:"POST",
-   mode: "no-cors",
+   mode: "no-cors", 
    headers:{ "Content-Type":"text/plain;charset=utf-8" },
    body:JSON.stringify(machine)
  });
 
- alert("Machine saved");
+ alert("Machine saved!");
+ 
+ // Limpiar formulario
+ document.querySelectorAll("input, textarea").forEach(input => input.value = "");
+ document.querySelector("#viewAdd button").innerText = "Save Machine";
+}
+
+// Función para leer el historial (GET)
+async function loadHistory() {
+  const container = document.getElementById("historyList");
+  container.innerHTML = "<p style='text-align:center;'>Cargando datos desde Excel...</p>";
+
+  try {
+    // Para LEER datos, NO usamos "no-cors", hacemos un fetch normal
+    const response = await fetch(SCRIPT_URL);
+    const data = await response.json();
+
+    let html = "";
+    
+    // El bucle va en reversa (del último al primero) para ver los más nuevos arriba.
+    // i > 0 evita que se muestre la fila 1 de Excel (los encabezados).
+    for(let i = data.length - 1; i > 0; i--) {
+      let row = data[i];
+      // row[0] es la fecha, row[1] el nombre, etc.
+      let fecha = new Date(row[0]).toLocaleDateString();
+      
+      html += `
+      <div class="history-item">
+        <div class="history-date">${fecha}</div>
+        <div class="history-title">${row[1]} (${row[2]})</div>
+        <div>${row[3]} ${row[4]} - ${row[5]}</div>
+        <div>Spindle: ${row[6]} hrs</div>
+        <div style="margin-top:5px; font-style:italic; color:#a1a1aa;">Notas: ${row[7] || 'Ninguna'}</div>
+      </div>`;
+    }
+
+    if (html === "") {
+      container.innerHTML = "<p>No hay registros todavía.</p>";
+    } else {
+      container.innerHTML = html;
+    }
+
+  } catch (error) {
+    container.innerHTML = "<p style='color:#ef4444;'>Error de conexión. Intenta de nuevo.</p>";
+    console.error(error);
+  }
 }
 </script>
 
 </body>
 </html>
-
-
