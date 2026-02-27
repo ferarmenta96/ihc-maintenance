@@ -88,7 +88,7 @@ async function saveMachine(){
  await fetch("https://script.google.com/macros/s/AKfycbynXOoAeg7k0JxPwj46z7-vn195__3OF8oSOM9P6gAWsxWHeODinut6jyCvv6ZQkCKD/exec",{
    method:"POST",
    mode: "no-cors",
-   headers:{ "Content-Type":"application/json" },
+   headers:{ "Content-Type":"text/plain;charset=utf-8" },
    body:JSON.stringify(machine)
  });
 
@@ -98,4 +98,5 @@ async function saveMachine(){
 
 </body>
 </html>
+
 
