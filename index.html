@@ -5,7 +5,6 @@
 <title>IHC Smart Maintenance</title>
 
 <link rel="manifest" href="manifest.json">
-
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="IHC Maint">
@@ -18,12 +17,19 @@ body{
  font-family:Arial;
  padding:20px;
 }
-input,select,button{
+/* Se agregó "textarea" y box-sizing para evitar que se salga de los márgenes */
+input, select, button, textarea{
  width:100%;
  margin:6px 0;
  padding:10px;
  border-radius:8px;
  border:none;
+ box-sizing: border-box; 
+}
+/* Estilos específicos para las notas */
+textarea {
+ font-family: Arial;
+ resize: vertical; /* Permite al usuario hacer el cuadro más grande hacia abajo */
 }
 button{
  background:#2563eb;
@@ -60,11 +66,12 @@ button{
 <input id="year" placeholder="Year">
 <input id="hours" placeholder="Spindle Hours">
 
+<textarea id="notes" placeholder="Notes / Observaciones" rows="3"></textarea>
+
 <button onclick="saveMachine()">Save Machine</button>
 </div>
 
 <script>
-
 async function saveMachine(){
 
  const machine={
@@ -73,11 +80,15 @@ async function saveMachine(){
   brand:document.getElementById("brand").value,
   model:document.getElementById("model").value,
   year:document.getElementById("year").value,
-  hours:document.getElementById("hours").value
+  hours:document.getElementById("hours").value,
+  notes:document.getElementById("notes").value // NUEVO: Captura el valor de las notas
  };
 
- await fetch("https://script.google.com/macros/s/AKfycbwxjbQG9UllNfPEb4fXGgJDctCErjbOXeyXCqjBMRes9brooL2ufbSAtT82PbdtpAIq/exec",{
+ // Recuerda poner tu URL de Google Apps Script aquí
+ await fetch("PEGAR_URL_SCRIPT_AQUI",{
    method:"POST",
+   mode: "no-cors",
+   headers:{ "Content-Type":"application/json" },
    body:JSON.stringify(machine)
  });
 
