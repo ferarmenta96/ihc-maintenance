@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IHC Smart Maintenance</title>
+
+<link rel="manifest" href="manifest.json">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="IHC Maint">
+<link rel="apple-touch-icon" href="icon.png">
+
+<style>
+body{
+ background:#18181b;
+ color:white;
+ font-family:Arial;
+ padding:20px;
+}
+input,select,button{
+ width:100%;
+ margin:6px 0;
+ padding:10px;
+ border-radius:8px;
+ border:none;
+}
+button{
+ background:#2563eb;
+ color:white;
+ font-weight:bold;
+}
+.card{
+ background:#27272a;
+ padding:15px;
+ border-radius:12px;
+ margin-top:15px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>IHC Smart Maintenance</h2>
+
+<div class="card">
+<h3>Add Machine</h3>
+
+<input id="name" placeholder="Machine Name">
+
+<select id="type">
+<option>Lathe</option>
+<option>Mill</option>
+<option>Press Brake</option>
+<option>Laser Machine</option>
+</select>
+
+<input id="brand" placeholder="Brand">
+<input id="model" placeholder="Model">
+<input id="year" placeholder="Year">
+<input id="hours" placeholder="Spindle Hours">
+
+<button onclick="saveMachine()">Save Machine</button>
+</div>
+
+<script>
+
+async function saveMachine(){
+
+ const machine={
+  name:document.getElementById("name").value,
+  type:document.getElementById("type").value,
+  brand:document.getElementById("brand").value,
+  model:document.getElementById("model").value,
+  year:document.getElementById("year").value,
+  hours:document.getElementById("hours").value
+ };
+
+ await fetch("https://script.google.com/macros/s/AKfycbwxjbQG9UllNfPEb4fXGgJDctCErjbOXeyXCqjBMRes9brooL2ufbSAtT82PbdtpAIq/exec",{
+   method:"POST",
+   body:JSON.stringify(machine)
+ });
+
+ alert("Machine saved");
+}
+</script>
+
+</body>
+</html>
