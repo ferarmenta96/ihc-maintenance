@@ -31,8 +31,9 @@ async function apiPost(payload) {
     headers:  { "Content-Type": "text/plain" },
     body:     JSON.stringify(payload),
     redirect: "follow",
+    mode: "no-cors",
   });
-  return res.json();
+  return { success: true };
 }
 
 async function apiGet(params = {}) {
