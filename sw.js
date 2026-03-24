@@ -1,28 +1,39 @@
 // ============================================================
-//  IHC MAINTENANCE APP – Service Worker (KILL SWITCH)
+//  IHC MAINTENANCE APP – Safe Service Worker
 //  File: sw.js
-//  This version removes offline capabilities, clears all caches, 
-//  and completely unregisters the service worker from the browser.
 // ============================================================
 
+const CACHE_NAME = "ihc-mtto-v3";
+
 self.addEventListener("install", event => {
-  self.skipWaiting(); // Force the new worker to take over immediately
+  self.skipWaiting();
 });
 
 self.addEventListener("activate", event => {
   event.waitUntil(
-    // 1. Delete all existing caches
-    caches.keys().then(keys => {
-      return Promise.all(keys.map(key => caches.delete(key)));
-    }).then(() => {
-      // 2. Unregister the Service Worker completely
-      return self.registration.unregister();
-    })
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+    )
   );
   self.clients.claim();
 });
 
-// Always go directly to the network, no caching at all
+// Fetch: Network-first, fallback to cache
 self.addEventListener("fetch", event => {
-  event.respondWith(fetch(event.request));
+  const url = new URL(event.request.url);
+
+  // Never cache API calls to Google Apps Script
+  if (url.hostname.includes("script.google.com") || url.search.includes("payload")) {
+    return; 
+  }
+
+  event.respondWith(
+    fetch(event.request)
+      .then(response => {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        return response;
+      })
+      .catch(() => caches.match(event.request))
+  );
 });
