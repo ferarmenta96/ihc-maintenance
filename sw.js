@@ -4,25 +4,10 @@
 //  Enables PWA install + basic offline shell
 // ============================================================
 
-const CACHE_NAME = "ihc-mtto-v1";
+const CACHE_NAME = "ihc-mtto-v2";
 
-// Files to cache for offline shell
-const SHELL_FILES = [
-  "/index.html",
-  "/maintenance.html",
-  "/css/styles.css",
-  "/js/config.js",
-  "/js/app.js",
-  "/manifest.json",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png"
-];
-
-// ---- Install: cache the app shell ----
+// ---- Install: skip caching shell to avoid path issues ----
 self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL_FILES))
-  );
   self.skipWaiting();
 });
 
@@ -42,14 +27,13 @@ self.addEventListener("fetch", event => {
 
   // Always go network-first for API calls (Apps Script)
   if (url.hostname.includes("script.google.com")) {
-    return; // Let it pass through normally
+    return;
   }
 
-  // For app shell files: network first, cache fallback
+  // For everything else: network first, cache fallback
   event.respondWith(
     fetch(event.request)
       .then(response => {
-        // Update cache with fresh response
         const clone = response.clone();
         caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
         return response;
