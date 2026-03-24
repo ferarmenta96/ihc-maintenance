@@ -25,8 +25,9 @@ const statusClass   = s => ({ "Pending": "status-pending", "In Progress": "statu
 async function apiPost(payload) {
   const res = await fetch(IHC_CONFIG.SCRIPT_URL, {
     method: "POST",
-    body:   JSON.stringify(payload),
-    // Apps Script ignores Content-Type to avoid CORS preflight
+    headers: { "Content-Type": "text/plain" },  // ← texto plano evita preflight Y redirección
+    body: JSON.stringify(payload),
+    redirect: "follow",
   });
   return res.json();
 }
