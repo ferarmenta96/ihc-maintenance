@@ -8,14 +8,14 @@ const CACHE_NAME = "ihc-mtto-v1";
 
 // Files to cache for offline shell
 const SHELL_FILES = [
-  "/index.html",
-  "/maintenance.html",
-  "/css/styles.css",
-  "/js/config.js",
-  "/js/app.js",
-  "/manifest.json",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png"
+  "/ihc-maintenance/index.html",
+  "/ihc-maintenance/maintenance.html",
+  "/ihc-maintenance/css/styles.css",
+  "/ihc-maintenance/js/config.js",
+  "/ihc-maintenance/js/app.js",
+  "/ihc-maintenance/manifest.json",
+  "/ihc-maintenance/icons/icon-192.png",
+  "/ihc-maintenance/icons/icon-512.png"
 ];
 
 // ---- Install: cache the app shell ----
