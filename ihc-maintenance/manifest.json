@@ -2,7 +2,7 @@
   "name": "IHC Maintenance",
   "short_name": "IHC MTTO",
   "description": "IHC Maintenance Request & Management System",
-  "start_url": "/index.html",
+  "start_url": "/ihc-maintenance/index.html"
   "display": "standalone",
   "background_color": "#0d0d14",
   "theme_color": "#0d0d14",
