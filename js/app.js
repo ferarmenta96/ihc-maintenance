@@ -23,10 +23,13 @@ const statusClass   = s => ({ "Pending": "status-pending", "In Progress": "statu
 
 // ---- API calls ----
 async function apiPost(payload) {
+  // FIX: "text/plain" prevents CORS preflight AND avoids the 302 redirect
+  // that Apps Script causes when no Content-Type is set, which makes
+  // fetch follow the redirect as GET instead of POST.
   const res = await fetch(IHC_CONFIG.SCRIPT_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain" },  // ← texto plano evita preflight Y redirección
-    body: JSON.stringify(payload),
+    method:   "POST",
+    headers:  { "Content-Type": "text/plain" },
+    body:     JSON.stringify(payload),
     redirect: "follow",
   });
   return res.json();
