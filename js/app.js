@@ -1,7 +1,7 @@
 // ============================================================
 //  IHC MAINTENANCE APP – Main Logic
 //  File: js/app.js
-//  FIX: Uses JSONP instead of fetch POST to avoid CORS issues
+//  Uses JSONP instead of fetch POST to avoid CORS issues
 // ============================================================
 
 const PAGE = (() => {
@@ -22,7 +22,7 @@ const statusClass   = s => ({ "Pending": "status-pending", "In Progress": "statu
 
 // ---- API calls ----
 
-// ✅ JSONP — mismo método que usa Horus (evita bloqueo CORS completamente)
+// ✅ JSONP — avoids CORS blocking
 function apiPostJSONP(payload) {
   return new Promise((resolve, reject) => {
     const callbackName = "__ihcCallback_" + Date.now();
@@ -75,8 +75,8 @@ if (PAGE === "request") {
       e.preventDefault();
       const btn = form.querySelector("button[type=submit]");
       btn.disabled    = true;
-      btn.textContent = "Sending…";
-      showStatus("loading", "Submitting request…");
+      btn.textContent = "Sending...";
+      showStatus("loading", "Submitting request...");
 
       try {
         const data = Object.fromEntries(new FormData(form));
@@ -84,10 +84,10 @@ if (PAGE === "request") {
         const res = await apiPostJSONP(data);
 
         if (res.success) {
-          showStatus("success", `✔ Request submitted. ID: <strong>${res.id}</strong>`);
+          showStatus("success", `✔ Submitted successfully! ID: <strong>${res.id}</strong>`);
           form.reset();
         } else {
-          showStatus("error", "✖ " + (res.error || "Unknown error"));
+          showStatus("error", "✖ Error: " + (res.error || "Unknown error"));
         }
       } catch (err) {
         showStatus("error", "✖ Could not connect. Please check your connection.");
@@ -227,7 +227,7 @@ if (PAGE === "dashboard") {
       e.preventDefault();
       const btn = updateForm.querySelector("button[type=submit]");
       btn.disabled    = true;
-      btn.textContent = "Saving…";
+      btn.textContent = "Saving...";
 
       try {
         const payload = {
