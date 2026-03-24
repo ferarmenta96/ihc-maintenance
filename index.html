@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IHC – Maintenance Request</title>
+  <meta name="description" content="IHC Maintenance Request System">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="IHC MTTO">
+  <meta name="theme-color" content="#0d0d14">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header class="app-header">
+    <a href="index.html" class="header-brand">
+      <div class="header-logo">IHC</div>
+      <span class="header-name">IHC <span>Maintenance</span></span>
+    </a>
+    <nav class="header-nav">
+      <a href="index.html" class="nav-link active">New Request</a>
+      <a href="maintenance.html" class="nav-link">MTTO Dashboard</a>
+    </nav>
+  </header>
+
+  <!-- ===== CONTENT ===== -->
+  <main class="page-container">
+    <h1 class="page-title">New Request</h1>
+    <p class="page-subtitle">Submit a breakdown report or maintenance work order</p>
+
+    <div class="form-card">
+      <form id="requestForm" autocomplete="off">
+
+        <div class="form-grid">
+
+          <!-- Department -->
+          <div class="form-group">
+            <label class="form-label" for="department">Department</label>
+            <input
+              class="form-input"
+              id="department"
+              name="department"
+              placeholder="e.g. Production"
+              required
+              type="text"
+            >
+          </div>
+
+          <!-- Machine -->
+          <div class="form-group">
+            <label class="form-label" for="machine">Machine / Equipment</label>
+            <input
+              class="form-input"
+              id="machine"
+              name="machine"
+              placeholder="e.g. Compressor A-2"
+              required
+              type="text"
+            >
+          </div>
+
+          <!-- Issue -->
+          <div class="form-group full">
+            <label class="form-label" for="issue">Issue Description</label>
+            <textarea
+              class="form-textarea"
+              id="issue"
+              name="issue"
+              placeholder="Describe the failure or work required in detail…"
+              required
+            ></textarea>
+          </div>
+
+          <!-- Priority -->
+          <div class="form-group full">
+            <label class="form-label">Priority Level</label>
+            <div class="urgency-group">
+              <input class="urgency-opt" type="radio" id="pri-high"   name="priority" value="High">
+              <label class="urgency-label" for="pri-high">🔴 High</label>
+
+              <input class="urgency-opt" type="radio" id="pri-medium" name="priority" value="Medium" checked>
+              <label class="urgency-label" for="pri-medium">🟡 Medium</label>
+
+              <input class="urgency-opt" type="radio" id="pri-low"    name="priority" value="Low">
+              <label class="urgency-label" for="pri-low">🟢 Low</label>
+            </div>
+          </div>
+
+        </div><!-- /form-grid -->
+
+        <button class="btn-primary" type="submit">Submit Request</button>
+
+        <!-- Response area -->
+        <div id="statusArea" class="status-area"></div>
+
+      </form>
+    </div>
+
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(() => {
+        // Try relative path for GitHub Pages subdirectory hosting
+        navigator.serviceWorker.register("sw.js");
+      });
+    }
+  </script>
+</body>
+</html>
