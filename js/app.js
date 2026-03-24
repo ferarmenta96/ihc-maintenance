@@ -23,17 +23,16 @@ const statusClass   = s => ({ "Pending": "status-pending", "In Progress": "statu
 
 // ---- API calls ----
 async function apiPost(payload) {
-  // FIX: "text/plain" prevents CORS preflight AND avoids the 302 redirect
-  // that Apps Script causes when no Content-Type is set, which makes
-  // fetch follow the redirect as GET instead of POST.
   const res = await fetch(IHC_CONFIG.SCRIPT_URL, {
     method:   "POST",
     headers:  { "Content-Type": "text/plain" },
     body:     JSON.stringify(payload),
     redirect: "follow",
-    mode: "no-cors",
+    // ✅ FIXED: removed mode:"no-cors" — it was blocking the POST body
+    // from reaching Google Apps Script and hiding real errors.
   });
-  return { success: true };
+  const text = await res.text();
+  return JSON.parse(text);
 }
 
 async function apiGet(params = {}) {
