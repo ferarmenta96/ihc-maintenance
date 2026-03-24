@@ -14,7 +14,7 @@
 
 const IHC_CONFIG = {
   // 🔴 REPLACE THIS URL with your deployed Apps Script URL
-  SCRIPT_URL: "https://script.google.com/macros/s/AKfycbweui6kSnL3lNeTdqcsN-ob1heeJXKn1ow3B8FVvSQUgq5s99Js4my3jjgkirn0uJ03/exec",
+  SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwPok3sO8ux1W5RJ_xVv_YTkBspn3xSN18FKJ8iIB58EXxm_5oR0WJAHj5WpCBwgN3J/exec",
 
   APP_NAME:   "IHC Maintenance",
   VERSION:    "1.0.0",
