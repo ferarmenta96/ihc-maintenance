@@ -1,16 +1,15 @@
 // ============================================================
 //  IHC MAINTENANCE APP – Main Logic
 //  File: js/app.js
+//  FIX: Uses JSONP instead of fetch POST to avoid CORS issues
 // ============================================================
 
-// ---- Current page detection ----
 const PAGE = (() => {
   const path = window.location.pathname;
   if (path.includes("maintenance")) return "dashboard";
   return "request";
 })();
 
-// ---- Utilities ----
 const $ = id => document.getElementById(id);
 const fmt = iso => {
   if (!iso) return "—";
@@ -22,17 +21,39 @@ const priorityClass = p => ({ High: "badge-high", Medium: "badge-mid", Low: "bad
 const statusClass   = s => ({ "Pending": "status-pending", "In Progress": "status-progress", "Completed": "status-done" }[s] || "status-pending");
 
 // ---- API calls ----
-async function apiPost(payload) {
-  const res = await fetch(IHC_CONFIG.SCRIPT_URL, {
-    method:   "POST",
-    headers:  { "Content-Type": "text/plain" },
-    body:     JSON.stringify(payload),
-    redirect: "follow",
-    // ✅ FIXED: removed mode:"no-cors" — it was blocking the POST body
-    // from reaching Google Apps Script and hiding real errors.
+
+// ✅ JSONP — mismo método que usa Horus (evita bloqueo CORS completamente)
+function apiPostJSONP(payload) {
+  return new Promise((resolve, reject) => {
+    const callbackName = "__ihcCallback_" + Date.now();
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error("Timeout — no response from server"));
+    }, 30000);
+
+    function cleanup() {
+      clearTimeout(timeout);
+      delete window[callbackName];
+      const s = document.getElementById("ihcJsonpScript");
+      if (s) s.remove();
+    }
+
+    window[callbackName] = function(result) {
+      cleanup();
+      resolve(result);
+    };
+
+    const script   = document.createElement("script");
+    script.id      = "ihcJsonpScript";
+    script.src     = IHC_CONFIG.SCRIPT_URL
+      + "?callback=" + callbackName
+      + "&payload="  + encodeURIComponent(JSON.stringify(payload));
+    script.onerror = function() {
+      cleanup();
+      reject(new Error("Could not connect to server"));
+    };
+    document.body.appendChild(script);
   });
-  const text = await res.text();
-  return JSON.parse(text);
 }
 
 async function apiGet(params = {}) {
@@ -60,7 +81,7 @@ if (PAGE === "request") {
       try {
         const data = Object.fromEntries(new FormData(form));
         data.action = "submit";
-        const res = await apiPost(data);
+        const res = await apiPostJSONP(data);
 
         if (res.success) {
           showStatus("success", `✔ Request submitted. ID: <strong>${res.id}</strong>`);
@@ -94,11 +115,9 @@ if (PAGE === "dashboard") {
   let activeFilter = "all";
   let refreshTimer = null;
 
-  // --- Initial load ---
   fetchRequests();
   startAutoRefresh();
 
-  // --- Status filters ---
   document.querySelectorAll("[data-filter]").forEach(btn => {
     btn.addEventListener("click", () => {
       document.querySelectorAll("[data-filter]").forEach(b => b.classList.remove("active"));
@@ -108,7 +127,6 @@ if (PAGE === "dashboard") {
     });
   });
 
-  // --- Search ---
   const searchInput = $("searchInput");
   if (searchInput) {
     searchInput.addEventListener("input", () => renderTable(allRequests));
@@ -143,7 +161,6 @@ if (PAGE === "dashboard") {
       return matchFilter && matchSearch;
     });
 
-    // Sort: High priority first, completed at the bottom
     const priOrder = { High: 0, Medium: 1, Low: 2 };
     filtered.sort((a, b) => {
       if (a.Status === "Completed" && b.Status !== "Completed") return 1;
@@ -186,7 +203,6 @@ if (PAGE === "dashboard") {
     set("cnt-done",     data.filter(r => r.Status === "Completed").length);
   }
 
-  // --- Update modal ---
   window.openUpdateModal = function(id, defaultStatus, currentTech) {
     const modal   = $("updateModal");
     const idField = $("modalId");
@@ -221,7 +237,7 @@ if (PAGE === "dashboard") {
           technician: $("modalTechnician").value,
           comment:    $("modalComment").value,
         };
-        const res = await apiPost(payload);
+        const res = await apiPostJSONP(payload);
 
         if (res.success) {
           closeModal();
@@ -240,11 +256,9 @@ if (PAGE === "dashboard") {
     });
   }
 
-  // --- Auto-refresh ---
   function startAutoRefresh() {
     refreshTimer = setInterval(fetchRequests, IHC_CONFIG.REFRESH_INTERVAL);
   }
 
-  // Expose for manual refresh button
   window.fetchRequests = fetchRequests;
 }
