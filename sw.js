@@ -1,43 +1,28 @@
 // ============================================================
-//  IHC MAINTENANCE APP – Service Worker
+//  IHC MAINTENANCE APP – Service Worker (KILL SWITCH)
 //  File: sw.js
-//  Enables PWA install + basic offline shell
+//  This version removes offline capabilities, clears all caches, 
+//  and completely unregisters the service worker from the browser.
 // ============================================================
 
-const CACHE_NAME = "ihc-mtto-v2";
-
-// ---- Install: skip caching shell to avoid path issues ----
 self.addEventListener("install", event => {
-  self.skipWaiting();
+  self.skipWaiting(); // Force the new worker to take over immediately
 });
 
-// ---- Activate: clean up old caches ----
 self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    )
+    // 1. Delete all existing caches
+    caches.keys().then(keys => {
+      return Promise.all(keys.map(key => caches.delete(key)));
+    }).then(() => {
+      // 2. Unregister the Service Worker completely
+      return self.registration.unregister();
+    })
   );
   self.clients.claim();
 });
 
-// ---- Fetch: network first, fallback to cache ----
+// Always go directly to the network, no caching at all
 self.addEventListener("fetch", event => {
-  const url = new URL(event.request.url);
-
-  // Always go network-first for API calls (Apps Script)
-  if (url.hostname.includes("script.google.com")) {
-    return;
-  }
-
-  // For everything else: network first, cache fallback
-  event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        return response;
-      })
-      .catch(() => caches.match(event.request))
-  );
+  event.respondWith(fetch(event.request));
 });
