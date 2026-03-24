@@ -4,10 +4,11 @@
 //  Uses JSONP instead of fetch POST to avoid CORS issues
 // ============================================================
 
+// Replace the top block of app.js with this foolproof detection:
 const PAGE = (() => {
-  const path = window.location.pathname;
-  if (path.includes("maintenance")) return "dashboard";
-  return "request";
+  if (document.getElementById("requestsTable")) return "dashboard";
+  if (document.getElementById("requestForm")) return "request";
+  return "unknown";
 })();
 
 const $ = id => document.getElementById(id);
