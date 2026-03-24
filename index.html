@@ -106,13 +106,5 @@
 
   <script src="js/config.js"></script>
   <script src="js/app.js"></script>
-  <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js").catch(() => {
-        // Try relative path for GitHub Pages subdirectory hosting
-        navigator.serviceWorker.register("sw.js");
-      });
-    }
-  </script>
-</body>
+ </body>
 </html>
